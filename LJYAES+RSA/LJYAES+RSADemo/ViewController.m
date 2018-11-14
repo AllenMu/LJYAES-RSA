@@ -54,31 +54,6 @@
     
 }
 
-- (NSArray *)arrValueSortedDictionary:(NSDictionary *)dict{
-    
-    //将所有的key放进数组
-    NSArray *allKeyArray = [dict allKeys];
-    
-    //序列化器对数组进行排序的block 返回值为排序后的数组
-    
-    NSArray *afterSortKeyArray = [allKeyArray sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        NSComparisonResult resuest = [obj1 compare:obj2];
-        return resuest;
-    }];
-    
-    
-//    NSLog(@"afterSortKeyArray:%@",afterSortKeyArray);
-    
-    //通过排列的key值获取value
-    NSMutableArray *valueArray = [NSMutableArray array];
-    for (NSString *sortsing in afterSortKeyArray) {
-        NSString *valueString = [dict objectForKey:sortsing];
-        [valueArray addObject:valueString];
-    }
-//    NSLog(@"valueArray:%@",valueArray);
-    return valueArray;
-    
-}
 - (IBAction)btnEncrypt:(id)sender
 {
     if(_TFKey.text.length == 0)
@@ -140,9 +115,6 @@
             [strValues appendString:strArrToJson];
         }
     }
-    
-    NSString *strValuesNew = [strValues stringByReplacingOccurrencesOfString:@"\\/" withString:@"\/"];
-    
     
     NSString* sign = [_handler signString:strValues];
     
@@ -263,8 +235,18 @@
 //                                                              error:nil];
         NSMutableDictionary *dicWithOutSign = [[NSMutableDictionary alloc] initWithDictionary:dic];
         [dicWithOutSign removeObjectForKey:@"sign"];
-        _labelDecrypt.text = [NSString stringWithFormat:@"%@",dicWithOutSign];
-        NSLog(@"%@",dicWithOutSign);
+        
+        NSString *strKey = [[dicWithOutSign allKeys] firstObject];
+        NSString *strValue = dicWithOutSign[strKey];
+        
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示" message:[NSString stringWithFormat:@"{@\"%@\":@\"%@\"}",strKey,strValue] preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            nil;
+        }];
+        [alert addAction:action];
+        [self presentViewController:alert animated:YES completion:^{
+            nil;
+        }];
     }
    
 }
@@ -282,7 +264,6 @@
                                                           error:&err];
     if(err)
     {
-//        NSLog(@"json解析失败：%@",err);
         return nil;
     }
     return dic;
@@ -291,20 +272,37 @@
 
 - (NSArray *)arrKeySortedDictionary:(NSDictionary *)dict{
     
-    //将所有的key放进数组
+    NSArray *allKeyArray = [dict allKeys];
+    NSArray *afterSortKeyArray = [allKeyArray sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        NSComparisonResult resuest = [obj1 compare:obj2];
+        return resuest;
+    }];
+    
+    return afterSortKeyArray;
+    
+}
+
+- (NSArray *)arrValueSortedDictionary:(NSDictionary *)dict{
+    
     NSArray *allKeyArray = [dict allKeys];
     
-    //序列化器对数组进行排序的block 返回值为排序后的数组
-    
+    //序列化器对数组进行排序，返回排序后的数组
     NSArray *afterSortKeyArray = [allKeyArray sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         NSComparisonResult resuest = [obj1 compare:obj2];
         return resuest;
     }];
     
     
-    return afterSortKeyArray;
+    //通过排序后的key值获取value
+    NSMutableArray *valueArray = [NSMutableArray array];
+    for (NSString *sortsing in afterSortKeyArray) {
+        NSString *valueString = [dict objectForKey:sortsing];
+        [valueArray addObject:valueString];
+    }
+    return valueArray;
     
 }
+
 
 
 @end
